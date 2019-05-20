@@ -1,0 +1,61 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "log_file_path":"$HOME/Logs",
+    "formatters": {
+        "simple": {
+            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        },
+        "extra": {"format":"%(asctime)-16s %(name)-8s %(filename)-12s %(lineno)-6s %(funcName)-30s %(levelname)-8s %(message)s",
+                 "datefmt":"%m-%d %H:%M:%S"}
+    },
+    
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "WARNING",
+            "formatter": "simple",
+            "stream": "ext://sys.stdout"
+        },
+        
+        "debugconsole": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "simple",
+            "stream": "ext://sys.stdout"
+        },
+    
+        "debug_file_handler": {
+            "class": "logging.FileHandler",
+            "level": "DEBUG",
+            "formatter": "extra",
+            "filename": "QuerySolar.log",
+            "mode": "w",
+            "encoding": "utf8"
+        },
+    
+        "error_file_handler": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "ERROR",
+            "formatter": "extra",
+            "filename": "QuerySolar_errors.log",
+            "maxBytes": 1048576,
+            "backupCount": 40,
+            "encoding": "utf8"
+        }
+    },
+    
+    
+    "loggers": {
+        "__main__": {
+            "level": "NOTSET",
+            "handlers": ["debug_file_handler"],
+            "propagate": false
+        }
+    },
+    
+    "root": {
+        "level": "NOTSET",
+        "handlers": ["debugconsole", "debug_file_handler"]
+    }
+}
