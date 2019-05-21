@@ -278,9 +278,10 @@ def main():
             pass
 
 ####              if magic shutdown file exists, exit loop, cleanup and exit
+        sleepCounter = 0
         sleepLength = intervalSec - time.time() % intervalSec
         while sleepLength > 20:
-            logger.debug('Sleep for 20 sec, then check if need to quit.')
+            sleepCounter += 1
             time.sleep(20)
             if os.path.exists(magicQuitPath):
                 logger.debug('Found magic quit file.')
@@ -292,10 +293,9 @@ def main():
             os.remove(magicQuitPath)
             break       #  break out of count loop
         sleepLength = intervalSec - time.time() % intervalSec
-        logger.debug("Sleep for %s sec."%sleepLength)
+        logger.debug("Sleep for %s more sec."%sleepLength)
         time.sleep(sleepLength)
-        logger.debug('Slept for %s seconds.  It is now: %s'%(sleepLength, datetime.datetime.now().isoformat()))
-
+        logger.debug('Slept for a total of %s seconds.  It is now: %s'%(sleepLength + sleepCounter*20, datetime.datetime.now().isoformat()))
 
         loopCount = loopCount - 1
         if loopCount == 0:
