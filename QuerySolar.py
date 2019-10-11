@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
+'''
+Program to read Solar energy production data from inverters.
 
+Install as a Launchctl Agent using:
+../MqttUtils/InstallAgent.py QuerySolar.py
+
+QuerySolar optional args are specified at the end of the above line
+
+'''
 import time
 import datetime
 import os
@@ -73,13 +81,16 @@ VALUES (%(Name)s, %(TodayWattHour)s, %(LifeWattHour)s, %(SerialNumber)s, %(Xid)s
 %(InVoltsNow)s, %(InAmpsNow)s, %(InWattsNow)s, 
 %(OutVoltsNow)s, %(OutAmpsNow)s, %(OutWattsNow)s)"""
 
-
-#####  Define logging
 ProgFile = os.path.basename(sys.argv[0])
 ProgName, ext = os.path.splitext(ProgFile)
 ProgPath = os.path.dirname(os.path.realpath(sys.argv[0]))
+
+#####  Setup logging; first try for file specific, and if it doesn't exist, use a folder setup file.
 logConfFileName = os.path.join(ProgPath, ProgName + '_loggingconf.json')
+if not os.path.isfile(logConfFileName):
+    logConfFileName = os.path.join(ProgPath, 'Loggingconf.json')
 if os.path.isfile(logConfFileName):
+    # print('Using logging conf file: %s'%logConfFileName)
     try:
         with open(logConfFileName, 'r') as logging_configuration_file:
             config_dict = json.load(logging_configuration_file)
@@ -90,13 +101,23 @@ if os.path.isfile(logConfFileName):
             logPath=""
         for p in config_dict['handlers'].keys():
             if 'filename' in config_dict['handlers'][p]:
-                logFileName = os.path.join(logPath, config_dict['handlers'][p]['filename'])
-                config_dict['handlers'][p]['filename'] = logFileName
+                fn = os.path.join(logPath, config_dict['handlers'][p]['filename'].replace('<replaceMe>', ProgName))
+                config_dict['handlers'][p]['filename'] = fn
+                # print('Setting handler %s filename to: %s'%(p, fn))
+
+        # # program specific logging configurations:
+        # config_dict["handlers"]["console"]["level"] = 'NOTSET'
+        # print('Setting console handler level to NOTSET')
+        # # config_dict["handlers"]["debug_file_handler"]["class"] = 'logging.FileHandler'
+        # config_dict["handlers"]["debug_file_handler"]["mode"] = '\'w\''
+
         logging.config.dictConfig(config_dict)
     except Exception as e:
         print("loading logger config from file failed.")
         print(e)
         pass
+else:
+    print("Logging configuration file not found.")
 
 logger = logging.getLogger(__name__)
 logger.info('logger name is: "%s"', logger.name)
@@ -176,7 +197,7 @@ def main():
     parser = argparse.ArgumentParser(description = 'Read data from solar inverter(s) and send to MQTT and database.')
     # parser.add_argument("-m","--meterId", dest="meterId", action="store", default=cfg['meter_id'], help="Numeric Id of EKM meter to read.")
     parser.add_argument("-r", "--repeatCount", dest="repeatCount", action="store", default='0', help="Number of times to read meinvertersters; 0 => forever.")
-    parser.add_argument("-i", "--interval", dest="interval", action="store", default='15', help="The interval in munutes between successive inverter reads.")
+    parser.add_argument("-i", "--interval", dest="interval", action="store", default='5', help="The interval in munutes between successive inverter reads.")
     parser.add_argument("-W", "--dontWriteToDB", dest="noWriteDb", action="store_true", default=False, help="Don't write to database [during debug defaults to True].")
     parser.add_argument("-v", "--verbosity", dest="verbosity", action="count", help="increase output verbosity", default=0)
     args = parser.parse_args()

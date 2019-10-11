@@ -26,11 +26,12 @@
         },
     
         "debug_file_handler": {
-            "class": "logging.FileHandler",
+            "class": "logging.handlers.RotatingFileHandler",
             "level": "DEBUG",
             "formatter": "extra",
             "filename": "QuerySolar.log",
-            "mode": "w",
+            "maxBytes": 1048576,
+            "backupCount": 40,
             "encoding": "utf8"
         },
     
@@ -49,7 +50,7 @@
     "loggers": {
         "__main__": {
             "level": "NOTSET",
-            "handlers": ["debug_file_handler"],
+            "handlers": ["console", "debug_file_handler"],
             "propagate": false
         }
     },
